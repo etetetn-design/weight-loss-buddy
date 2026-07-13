@@ -1046,3 +1046,302 @@ return; }
       </div>
     `;
 }
+
+
+      function buildDetailContent(m, viewMode, range, monthDate){
+            return `
+                  <h2>${m.emoji} ${escapeHtml(m.name)} 的體重紀錄</h2>
+                        <div class="tabs" style="margin-bottom:14px;">
+                                <div class="tab ${viewMode==='chart'?'active':''}" data-view="chart">📈 曲線圖</div>
+                                        <div class="tab ${viewMode==='calendar'?'active':''}" data-view="calendar">🗓️ 月曆</div>
+                                              </div>
+                                                    ${viewMode==='chart' ? buildChartSection(m, range) : buildCalendarSection(m, monthDate)}
+                                                          <button class="secondary-btn" id="detail-close" style="margin-top:16px;">關閉</button>
+                                                              `;
+      }
+
+      function openMemberDetailModal(memberId){
+            const m = memberById(memberId);
+            if(!m) return;
+            let viewMode = 'chart';
+            let range = 7;
+            let monthDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+            overlay.innerHTML = `<div class="sheet" id="detail-sheet"></div>`;
+            document.body.appendChild(overlay);
+            overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+            function draw(){
+                    document.getElementById('detail-sheet').innerHTML = buildDetailContent(m, viewMode, range, monthDate);
+                    document.querySelectorAll('[data-view]').forEach(btn=>{
+                              btn.onclick = () => { viewMode = btn.getAttribute('data-view'); draw(); };
+                    });
+                    document.querySelectorAll('[data-range]').forEach(btn=>{
+                              btn.onclick = () => {
+                                          const v = btn.getAttribute('data-range');
+                                          range = v === 'all' ? 'all' : parseInt(v);
+                                          draw();
+                              };
+                    });
+                    document.querySelectorAll('[data-cal-nav]').forEach(btn=>{
+                              btn.onclick = () => {
+                                          const dir = parseInt(btn.getAttribute('data-cal-nav'));
+                                          monthDate = new Date(monthDate.getFullYear(), monthDate.getMonth()+dir, 1);
+                                          draw();
+                              };
+                    });
+                    document.querySelectorAll('[data-edit-checkin]').forEach(row=>{
+                              row.onclick = () => openEditCheckinModal(row.getAttribute('data-edit-checkin'), draw);
+                    });
+                    document.getElementById('detail-close').onclick = () => overlay.remove();
+            }
+            draw();
+      }
+
+      function openSwitchIdentityWarning(){
+            const me = memberById(state.currentUserId);
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+            overlay.innerHTML = `
+                  <div class="sheet">
+                          <h2>⚠️ 確定要切換身份嗎?</h2>
+                                  <div style="background:#FFF0F3; border:1.5px solid var(--coral); border-radius:14px; padding:14px; font-size:13px; color:var(--text); line-height:1.7; margin-bottom:16px;">
+                                            目前這台裝置是 <b>${me?escapeHtml(me.name):'未知'}</b>。切換之後:
+                                                      <br>• 打卡、排行榜都會變成算在<b>新身份</b>頭上
+                                                                <br>• 你將可以修改或刪除<b>新身份</b>的紀錄
+                                                                          <br>• 請確認真的是本人操作,才不會不小心動到別人的資料
+                                                                                  </div>
+                                                                                          <button class="primary-btn" id="sw-confirm">我了解,繼續切換</button>
+                                                                                                  <button class="secondary-btn" id="sw-cancel">取消,保持現在身份</button>
+                                                                                                        </div>
+                                                                                                            `;
+            document.body.appendChild(overlay);
+            overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+            document.getElementById('sw-cancel').onclick = () => overlay.remove();
+            document.getElementById('sw-confirm').onclick = () => {
+                    overlay.remove();
+                    state.currentUserId = null;
+                    state.view = 'identify';
+                    render();
+            };
+      }
+
+      function openResetDataWarning(){
+            const memberCount = state.members.length;
+            const checkinCount = state.checkins.length;
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+            overlay.innerHTML = `
+                  <div class="sheet">
+                          <h2>🚨 真的要重置所有資料嗎?</h2>
+                                  <div style="background:#FFF0F3; border:1.5px solid var(--coral); border-radius:14px; padding:14px; font-size:13px; color:var(--text); line-height:1.7; margin-bottom:16px;">
+                                            這會<b>一次清空全部人</b>的資料,不是只清你自己的:
+                                                      <br>• 全部 <b>${memberCount}</b> 位成員名單
+                                                                <br>• 全部 <b>${checkinCount}</b> 筆打卡、留言、emoji 反應
+                                                                          <br>• 每個人裝置記住的身份
+                                                                                    <br><br>清空後<b>無法復原</b>,大家的紀錄都會消失。
+                                                                                            </div>
+                                                                                                    <div class="field">
+                                                                                                              <label>請輸入「<b>清空</b>」兩個字以確認</label>
+                                                                                                                        <input type="text" id="rs-confirm-input" placeholder="清空">
+    </div>
+            <button class="primary-btn" id="rs-confirm" style="background:var(--coral); color:#FFFFFF; box-shadow:0 4px 0 #D63763;">確定清空全部資料</button>
+                    <button class="secondary-btn" id="rs-cancel">取消,先不要</button>
+                          </div>
+                              `;
+            document.body.appendChild(overlay);
+            overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+            document.getElementById('rs-cancel').onclick = () => overlay.remove();
+            document.getElementById('rs-confirm').onclick = async () => {
+                    const val = document.getElementById('rs-confirm-input').value.trim();
+                    if(val !== '清空'){ alert('請輸入「清空」兩個字才能確認唷'); return; }
+                    state.members = [];
+                    state.checkins = [];
+                    state.currentUserId = null;
+                    await saveMembers();
+                    await saveCheckins();
+                    overlay.remove();
+                    determineView();
+                    render();
+            };
+      }
+
+      function openMenuModal(){
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+            overlay.innerHTML = `
+                  <div class="sheet">
+                          <h2>⚙️ 設定</h2>
+                                  <button class="secondary-btn" id="mn-goal">🎯 修改我的目標</button>
+                                          <button class="secondary-btn" id="mn-switch">🙋 切換身份</button>
+                                                  <button class="secondary-btn" id="mn-add">➕ 新增好友</button>
+                                                          <button class="secondary-btn danger-btn" id="mn-reset">🗑️ 重置所有資料</button>
+                                                                  <button class="secondary-btn" id="mn-close" style="margin-top:14px;">關閉</button>
+                                                                        </div>
+                                                                            `;
+            document.body.appendChild(overlay);
+            overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+            document.getElementById('mn-close').onclick = () => overlay.remove();
+            document.getElementById('mn-goal').onclick = () => {
+                    overlay.remove();
+                    openEditGoalModal();
+            };
+            document.getElementById('mn-switch').onclick = () => {
+                    overlay.remove();
+                    openSwitchIdentityWarning();
+            };
+            document.getElementById('mn-add').onclick = () => {
+                    overlay.remove();
+                    openAddMemberModal();
+            };
+            document.getElementById('mn-reset').onclick = () => {
+                    overlay.remove();
+                    openResetDataWarning();
+            };
+      }
+
+      function openEditGoalModal(){
+            const me = memberById(state.currentUserId);
+            if(!me){ alert('找不到你的身份,請先切換身份'); return; }
+            let form = { name: me.name, emoji: me.emoji, start: me.start, target: me.target };
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+            const emojiPicks = () => AVATARS.map(e => `<button data-pick="${e}" class="${form.emoji===e?'sel':''}">${e}</button>`).join('');
+            overlay.innerHTML = `
+                  <div class="sheet">
+                          <h2>🎯 修改我的目標</h2>
+                                  <div class="field"><label>暱稱</label><input type="text" id="eg-name" maxlength="10" value="${escapeHtml(form.name)}"></div>
+                                          <div class="field"><label>選個代表動物</label><div class="emoji-pick" id="eg-emoji">${emojiPicks()}</div></div>
+                                                  <div class="field"><label>起始體重 (kg)</label><input type="number" step="0.1" id="eg-start" value="${form.start}"></div>
+                                                          <div class="field"><label>目標體重 (kg)</label><input type="number" step="0.1" id="eg-target" value="${form.target}"></div>
+                                                                  <p style="font-size:11.5px; color:var(--text-dim); margin:-6px 0 14px; line-height:1.6;">
+                                                                            提醒:調整「起始體重」會連動影響排行榜上的累計減重與達標率計算,但不會動到你已經打卡的歷史紀錄。
+                                                                                    </p>
+                                                                                            <button class="primary-btn" id="eg-submit">儲存修改</button>
+                                                                                                    <button class="secondary-btn" id="eg-cancel">取消</button>
+                                                                                                          </div>
+                                                                                                              `;
+            document.body.appendChild(overlay);
+            overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+            document.getElementById('eg-cancel').onclick = () => overlay.remove();
+            function rebindEmojiPicks(){
+                    overlay.querySelectorAll('[data-pick]').forEach(btn=>{
+                              btn.onclick = () => {
+                                          form.emoji = btn.getAttribute('data-pick');
+                                          document.getElementById('eg-emoji').innerHTML = emojiPicks();
+                                          rebindEmojiPicks();
+                              };
+                    });
+            }
+            rebindEmojiPicks();
+            document.getElementById('eg-submit').onclick = async () => {
+                    const name = document.getElementById('eg-name').value.trim();
+                    const start = parseFloat(document.getElementById('eg-start').value);
+                    const target = parseFloat(document.getElementById('eg-target').value);
+                    if(!name || isNaN(start) || isNaN(target)){ alert('請填寫完整資訊'); return; }
+                    me.name = name; me.emoji = form.emoji; me.start = start; me.target = target;
+                    await saveMembers();
+                    overlay.remove();
+                    render();
+            };
+      }
+
+      function openAddMemberModal(){
+            let form = { name:'', emoji:AVATARS[state.members.length % AVATARS.length], start:'', target:'' };
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+            const emojiPicks = () => AVATARS.map(e => `<button data-pick="${e}" class="${form.emoji===e?'sel':''}">${e}</button>`).join('');
+            overlay.innerHTML = `
+                  <div class="sheet">
+                          <h2>➕ 新增好朋友</h2>
+                                  <div class="field"><label>暱稱</label><input type="text" id="am-name" maxlength="10"></div>
+                                          <div class="field"><label>選個代表動物</label><div class="emoji-pick" id="am-emoji">${emojiPicks()}</div></div>
+                                                  <div class="field"><label>起始體重 (kg)</label><input type="number" step="0.1" id="am-start"></div>
+                                                          <div class="field"><label>目標體重 (kg)</label><input type="number" step="0.1" id="am-target"></div>
+                                                                  <button class="primary-btn" id="am-submit">加入我們</button>
+                                                                          <button class="secondary-btn" id="am-cancel">取消</button>
+                                                                                </div>
+                                                                                    `;
+            document.body.appendChild(overlay);
+            overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+            document.getElementById('am-cancel').onclick = () => overlay.remove();
+            function rebindEmojiPicks(){
+                    overlay.querySelectorAll('[data-pick]').forEach(btn=>{
+                              btn.onclick = () => {
+                                          form.emoji = btn.getAttribute('data-pick');
+                                          document.getElementById('am-emoji').innerHTML = emojiPicks();
+                                          rebindEmojiPicks();
+                              };
+                    });
+            }
+            rebindEmojiPicks();
+            document.getElementById('am-submit').onclick = async () => {
+                    const name = document.getElementById('am-name').value.trim();
+                    const start = parseFloat(document.getElementById('am-start').value);
+                    const target = parseFloat(document.getElementById('am-target').value);
+                    if(!name || isNaN(start) || isNaN(target)){ alert('請填寫完整資訊'); return; }
+                    state.members.push({ id: uid(), name, emoji: form.emoji, start, target });
+                    await saveMembers();
+                    overlay.remove();
+                    render();
+            };
+      }
+
+      function escapeHtml(str){
+            return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+      }
+
+      function afterDataChange(){
+            if(!membersLoaded || !checkinsLoaded) return;
+            determineView();
+            render();
+      }
+
+      function startListening(){
+            membersDocRef.onSnapshot(snap => {
+                    state.members = (snap.exists && snap.data().list) ? snap.data().list : [];
+                    membersLoaded = true;
+                    afterDataChange();
+            }, err => {
+                    console.error('members listener error', err);
+                    state.view = 'firebase-error';
+                    render();
+            });
+            checkinsDocRef.onSnapshot(snap => {
+                    state.checkins = (snap.exists && snap.data().list) ? snap.data().list : [];
+                    checkinsLoaded = true;
+                    afterDataChange();
+            }, err => {
+                    console.error('checkins listener error', err);
+                    state.view = 'firebase-error';
+                    render();
+            });
+      }
+
+      async function init(){
+            render();
+            state.currentUserId = await getLocalIdentity();
+            if(!isFirebaseConfigured()){
+                    state.view = 'config-needed';
+                    render();
+                    return;
+            }
+            try{
+                    firebase.initializeApp(firebaseConfig);
+                    db = firebase.firestore();
+                    db.settings({ experimentalAutoDetectLongPolling: true, useFetchStreams: false });
+                    membersDocRef = db.collection('appData').doc('members');
+                    checkinsDocRef = db.collection('appData').doc('checkins');
+                    startListening();
+            }catch(e){
+                    console.error('firebase init failed', e);
+                    state.view = 'firebase-error';
+                    render();
+            }
+      }
+
+      init();
+    })();
+</script>
+  </body>
+  </html>
