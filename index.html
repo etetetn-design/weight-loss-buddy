@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+  <html lang="zh-Hant">
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <title>浪女減肥互助會</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-app-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.15.0/firebase-firestore-compat.js"></script>
+  <style>
+    :root{
+      --bg:#FFF4F7;
+      --bg-2:#FFE9F1;
+      --surface:#FFFFFF;
+      --surface-2:#FFF3F8;
+      --border:#FFD6E5;
+      --text:#6B4E5C;
+    --text-muted:#9B7C90;
+    --text-dim:#C7A9BC;
+          --gold:#FFAE5C;
+          --gold-dim:#FFD9A8;
+          --silver:#B8C2E8;
+          --bronze:#F0A57E;
+          --coral:#F2597E;
+          --teal:#34B88C;
+    --radius:22px;
+}
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+        background:radial-gradient(120% 100% at 50% -10%, #FFEEF4 0%, var(--bg) 55%, var(--bg-2) 100%);
+        color:var(--text);
+    font-family:'Noto Sans TC', sans-serif;
+    min-height:100vh;
+    padding-bottom:100px;
+}
+  ::selection{ background:var(--coral); color:#fff; }
+    :focus-visible{ outline:2px solid var(--gold); outline-offset:2px; border-radius:6px; }
+  button{ font-family:inherit; cursor:pointer; border:none; background:none; color:inherit; }
+  input, textarea{ font-family:inherit; }
+  .num{ font-family:'Baloo 2', sans-serif; font-weight:700; }
+  .display{ font-family:'Baloo 2', 'Noto Sans TC', sans-serif; font-weight:700; }
+  /* ---------- Header ---------- */
+  header{
+        padding:28px 20px 18px;
+    display:flex; align-items:center; justify-content:space-between;
+    position:sticky; top:0; z-index:20;
+    background:linear-gradient(180deg, rgba(255,244,247,0.97) 60%, rgba(255,244,247,0));
+    backdrop-filter:blur(6px);
+}
+  .brand{ display:flex; flex-direction:column; gap:2px; }
+  .brand .title{
+    font-family:'Baloo 2', sans-serif; font-weight:700; font-size:22px;
+    letter-spacing:0.03em; color:var(--gold);
+    display:flex; align-items:center; gap:8px;
+  }
+  .brand .subtitle{ font-size:12px; color:var(--text-muted); }
+  .icon-btn{
+        width:38px; height:38px; border-radius:50%;
+    background:var(--surface); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    font-size:17px; transition:transform .15s ease, border-color .15s ease;
+}
+  .icon-btn:hover{ border-color:var(--gold); transform:translateY(-1px); }
+  main{ max-width:560px; margin:0 auto; padding:0 16px; }
+  /* ---------- Tabs ---------- */
+  .tabs{
+        display:flex; gap:8px; background:var(--surface);
+    border:1px solid var(--border); border-radius:999px; padding:4px;
+    margin:6px 0 20px;
+}
+  .tab{
+        flex:1; text-align:center; padding:9px 10px; border-radius:999px;
+    font-size:13px; font-weight:700; color:var(--text-muted);
+    transition:background .2s ease, color .2s ease;
+  }
+  .tab.active{ background:var(--teal); color:#FFFFFF; }
+    /* ---------- Leaderboard ---------- */
+  .board{ display:flex; flex-direction:column; gap:10px; }
+  .row{
+        background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:14px;
+    display:flex; align-items:center; gap:12px;
+    animation:rise .5s ease backwards;
+    transition:border-color .2s ease, transform .15s ease, box-shadow .15s ease;
+    box-shadow:0 3px 0 var(--border), 0 8px 18px -10px rgba(255,143,168,0.4);
+  }
+  .row:hover{ border-color:var(--coral); transform:translateY(-2px); box-shadow:0 5px 0 var(--border), 0 12px 20px -10px rgba(255,143,168,0.5); }
+  .row.me{ box-shadow:0 3px 0 var(--gold), 0 8px 18px -10px rgba(255,174,92,0.45); }
+  @keyframes rise{ from{ opacity:0; transform:translateY(8px);} to{ opacity:1; transform:translateY(0);} }
+  .medal{
+        position:relative; flex-shrink:0;
+    width:46px; height:46px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Baloo 2', sans-serif; font-weight:700; font-size:16px;
+    background:var(--surface-2); border:2px solid var(--border);
+}
+  .medal.r1{ border-color:var(--gold); color:#C97A2A; box-shadow:0 0 14px -2px rgba(255,174,92,0.6); }
+    .medal.r2{ border-color:var(--silver); color:#6B7AA6; }
+  .medal.r3{ border-color:var(--bronze); color:#C2703F; }
+    .avatar{
+          width:40px; height:40px; border-radius:50%;
+    background:var(--surface-2); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    font-size:19px; flex-shrink:0; position:relative;
+  }
+  .streak-badge{
+        position:absolute; bottom:-4px; right:-4px;
+    background:#FFF0DA; border:1px solid var(--gold);
+        border-radius:999px; font-size:9px; padding:1px 4px;
+    display:flex; align-items:center; gap:1px; color:#C97A2A;
+        font-family:'Baloo 2', sans-serif; font-weight:700;
+           }
+  .row-info{ flex:1; min-width:0; }
+  .row-name{ font-weight:700; font-size:14.5px; display:flex; align-items:center; gap:6px; }
+  .row-name .you-tag{
+        font-size:10px; background:var(--gold); color:#FFFFFF; padding:1px 6px;
+      border-radius:999px; font-weight:700;
+}
+  .row-sub{ font-size:11.5px; color:var(--text-muted); margin-top:2px; }
+  .progress-track{
+        height:5px; background:var(--surface-2); border-radius:999px; margin-top:7px; overflow:hidden;
+}
+  .progress-fill{ height:100%; background:linear-gradient(90deg, var(--teal), var(--gold)); border-radius:999px; transition:width .6s ease; }
+  .row-stat{ text-align:right; flex-shrink:0; }
+  .row-stat .delta{ font-family:'Baloo 2', sans-serif; font-weight:700; font-size:17px; }
+  .row-stat .delta.loss{ color:#1E8F6C; }
+  .row-stat .delta.gain{ color:#D63763; }
+    .row-stat .cur{ font-size:10.5px; color:var(--text-dim); margin-top:2px; }
+  /* ---------- Section title ---------- */
+  .section-title{
+        font-family:'Baloo 2', sans-serif; font-weight:600; font-size:13px;
+    letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted);
+    margin:30px 4px 12px; display:flex; align-items:center; gap:8px;
+                       }
+  .section-title::after{ content:''; flex:1; height:1px; background:var(--border); }
+      /* ---------- Feed ---------- */
+      .feed{ display:flex; flex-direction:column; gap:12px; }
+  .feed-card{
+        background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:14px;
+    box-shadow:0 3px 0 var(--border), 0 8px 18px -10px rgba(255,143,168,0.35);
+}
+  .feed-head{ display:flex; align-items:center; gap:10px; }
+  .feed-head .fname{ font-weight:700; font-size:14px; }
+  .feed-head .ftime{ font-size:11px; color:var(--text-dim); margin-left:auto; font-family:'Baloo 2', sans-serif; }
+  .edit-btn{ font-size:13px; margin-left:6px; opacity:0.7; transition:opacity .15s ease, transform .1s ease; }
+  .edit-btn:hover{ opacity:1; transform:scale(1.1); }
+  .feed-weight{
+        margin-top:10px; font-family:'Baloo 2', sans-serif; font-weight:700; font-size:22px;
+    display:flex; align-items:baseline; gap:8px;
+}
+  .feed-weight .delta-chip{
+        font-size:11px; font-weight:700; padding:2px 7px; border-radius:999px;
+    background:var(--surface-2);
+}
+  .delta-chip.loss{ color:#1E8F6C; border:1px solid var(--teal); background:#E8FBF3; }
+    .delta-chip.gain{ color:#D63763; border:1px solid var(--coral); background:#FFEEF2; }
+    .feed-note{ font-size:13px; color:var(--text-muted); margin-top:6px; line-height:1.5; }
+  .reactions{ display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+  .rx-btn{
+        display:flex; align-items:center; gap:4px;
+    background:var(--surface-2); border:1px solid var(--border);
+    border-radius:999px; padding:4px 9px; font-size:13px;
+    transition:border-color .15s ease, transform .1s ease;
+}
+  .rx-btn:hover{ transform:translateY(-1px); }
+  .rx-btn.mine{ border-color:var(--gold); background:rgba(255,174,92,0.15); }
+  .rx-btn .n{ font-family:'Baloo 2', sans-serif; font-size:11px; color:var(--text-muted); }
+  .comments{ margin-top:12px; border-top:1px dashed var(--border); padding-top:10px; display:flex; flex-direction:column; gap:8px; }
+  .comment{ font-size:12.5px; display:flex; align-items:baseline; gap:6px; }
+  .comment b{ color:#C97A2A; font-weight:700; flex-shrink:0; }
+    .comment span{ color:var(--text-muted); flex:1; }
+  .comment-edit-btn{ font-size:11px; opacity:0.55; flex-shrink:0; transition:opacity .15s ease; }
+  .comment-edit-btn:hover{ opacity:1; }
+  .comment-form{ display:flex; gap:6px; margin-top:4px; }
+  .comment-form input{
+        flex:1; background:var(--surface-2); border:1px solid var(--border);
+    border-radius:999px; padding:8px 12px; color:var(--text); font-size:12.5px;
+}
+  .comment-form input::placeholder{ color:var(--text-dim); }
+  .comment-form button{
+        background:var(--teal); color:#FFFFFF; border-radius:999px; padding:0 14px; font-size:12px; font-weight:700;
+  }
+  .empty{
+        text-align:center; padding:36px 20px; color:var(--text-muted); font-size:13px;
+    background:var(--surface); border:1px dashed var(--border); border-radius:var(--radius);
+}
+  .empty .big{ font-size:30px; display:block; margin-bottom:8px; }
+  /* ---------- FAB ---------- */
+  .fab{
+        position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    background:var(--gold); color:#fff;
+        font-family:'Baloo 2', sans-serif; font-weight:700; letter-spacing:0.01em;
+    padding:14px 28px; border-radius:999px; font-size:15px;
+    box-shadow:0 5px 0 var(--bronze), 0 10px 24px -6px rgba(255,174,92,0.6);
+    z-index:30; display:flex; align-items:center; gap:8px;
+    transition:transform .15s ease;
+  }
+  .fab:active{ transform:translateX(-50%) translateY(3px); box-shadow:0 2px 0 var(--bronze), 0 6px 16px -6px rgba(255,174,92,0.6); }
+  /* ---------- Modal ---------- */
+  .overlay{
+        position:fixed; inset:0; background:rgba(6,10,9,0.72); backdrop-filter:blur(3px);
+    display:flex; align-items:flex-end; justify-content:center; z-index:50;
+    animation:fadeIn .2s ease;
+}
+  @keyframes fadeIn{ from{opacity:0;} to{opacity:1;} }
+  .sheet{
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:26px 26px 0 0; width:100%; max-width:560px;
+    padding:22px 20px 28px; animation:slideUp .25s ease;
+    max-height:88vh; overflow-y:auto;
+    box-shadow:0 -8px 30px -10px rgba(255,143,168,0.35);
+  }
+  @keyframes slideUp{ from{ transform:translateY(30px); opacity:0;} to{ transform:translateY(0); opacity:1;} }
+  .sheet h2{ font-family:'Baloo 2', sans-serif; font-size:20px; margin-bottom:16px; }
+  .sheet .close{ position:absolute; }
+  .field{ margin-bottom:14px; }
+  .field label{ font-size:12px; color:var(--text-muted); display:block; margin-bottom:6px; font-weight:600; }
+  .field input, .field textarea, .field select{
+        width:100%; background:var(--surface-2); border:1.5px solid var(--border);
+    border-radius:14px; padding:11px 13px; color:var(--text); font-size:14.5px;
+}
+  .field input:focus, .field textarea:focus{ border-color:var(--coral); }
+  .field textarea{ resize:none; min-height:60px; }
+  .weight-input{ display:flex; align-items:center; gap:8px; }
+  .weight-input input{ font-family:'Baloo 2', sans-serif; font-size:26px; font-weight:700; text-align:center; }
+  .weight-input .unit{ color:var(--text-muted); font-size:14px; }
+  .emoji-pick{ display:flex; flex-wrap:wrap; gap:8px; }
+  .emoji-pick button{
+        width:44px; height:44px; border-radius:14px; background:var(--surface-2);
+    border:1.5px solid var(--border); font-size:20px; transition:transform .1s ease;
+}
+  .emoji-pick button:hover{ transform:translateY(-2px) scale(1.05); }
+  .emoji-pick button.sel{ border-color:var(--gold); background:rgba(255,174,92,0.18); }
+  .primary-btn{
+        width:100%; background:var(--gold); color:#FFFFFF; padding:14px; border-radius:16px;
+      font-weight:700; font-size:15px; margin-top:6px; font-family:'Baloo 2', sans-serif;
+    box-shadow:0 4px 0 var(--bronze); transition:transform .1s ease;
+}
+  .primary-btn:active{ transform:translateY(3px); box-shadow:0 1px 0 var(--bronze); }
+  .secondary-btn{
+        width:100%; background:var(--surface-2); color:var(--text-muted); padding:12px; border-radius:16px;
+    font-weight:700; font-size:13.5px; margin-top:6px; border:1.5px solid var(--border);
+}
+  .danger-btn{ color:#D63763; border-color:var(--coral); background:#FFF0F3; }
+      .member-mini-list{ display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+  .member-mini{
+        display:flex; align-items:center; gap:10px; background:var(--surface-2);
+    border:1.5px solid var(--border); border-radius:14px; padding:9px 12px; font-size:13.5px;
+}
+  .member-mini button{ margin-left:auto; color:#D63763; font-size:12px; font-weight:700; }
+    .id-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:18px; }
+  .id-card{
+        background:var(--surface); border:1.5px solid var(--border); border-radius:18px;
+    padding:16px 8px; text-align:center; font-size:12.5px; font-weight:700;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    transition:border-color .15s ease, transform .1s ease;
+    box-shadow:0 3px 0 var(--border);
+}
+  .id-card:hover{ border-color:var(--coral); transform:translateY(-2px); }
+  .id-card .em{ font-size:28px; }
+  .center-wrap{ min-height:70vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; }
+  .center-wrap .big-title{ font-family:'Baloo 2', sans-serif; font-size:26px; color:var(--gold); margin-bottom:8px; }
+  .center-wrap p{ color:var(--text-muted); font-size:13.5px; max-width:320px; line-height:1.6; margin-bottom:22px; }
+  .add-row-btn{
+        width:100%; border:1px dashed var(--border); border-radius:12px; padding:12px;
+    color:var(--text-muted); font-size:13px; font-weight:600; margin-bottom:16px;
+}
+  .add-row-btn:hover{ border-color:var(--gold); color:var(--gold); }
+  .row{ cursor:pointer; }
+  .chevron{ color:var(--text-dim); font-size:20px; flex-shrink:0; }
+  .detail-list{ display:flex; flex-direction:column; gap:6px; max-height:220px; overflow-y:auto; }
+  .detail-row{ display:flex; align-items:center; gap:10px; background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:8px 12px; font-size:12.5px; }
+  .detail-row .dd-date{ color:var(--text-muted); width:46px; flex-shrink:0; }
+  .detail-row .dd-weight{ font-weight:700; flex:1; }
+  /* ---------- Calendar view ---------- */
+  .cal-nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .cal-nav button{
+        width:32px; height:32px; border-radius:50%; background:var(--surface-2);
+    border:1.5px solid var(--border); font-size:15px; font-weight:700; color:var(--text-muted);
+    transition:transform .1s ease, border-color .15s ease;
+}
+  .cal-nav button:hover{ border-color:var(--coral); color:var(--coral); transform:translateY(-1px); }
+  .cal-month-label{ font-family:'Baloo 2', sans-serif; font-weight:700; font-size:15px; text-align:center; }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7, 1fr); gap:5px; }
+  .cal-weekday{ text-align:center; font-size:10.5px; font-weight:700; color:var(--text-dim); padding-bottom:4px; }
+  .cal-cell{
+        aspect-ratio:1; border-radius:10px; background:var(--surface-2);
+    border:1.5px solid var(--border);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
+}
+  .cal-cell.cal-blank{ background:transparent; border-color:transparent; }
+  .cal-cell.today{ border-color:var(--gold); border-width:2px; }
+  .cal-cell.has-data{ cursor:pointer; transition:transform .1s ease; }
+  .cal-cell.has-data:hover{ transform:scale(1.06); }
+  .cal-cell.has-data.loss{ background:#E8FBF3; border-color:var(--teal); }
+    .cal-cell.has-data.gain{ background:#FFEEF2; border-color:var(--coral); }
+    .cal-day{ font-size:9.5px; color:var(--text-dim); }
+  .cal-cell.has-data .cal-day{ color:var(--text-muted); }
+  .cal-weight{ font-family:'Baloo 2', sans-serif; font-weight:700; font-size:11.5px; color:var(--text); }
+  .cal-legend{ display:flex; align-items:center; gap:14px; margin-top:12px; font-size:11px; color:var(--text-muted); }
+  .cal-legend span{ display:flex; align-items:center; gap:5px; }
+  .cal-legend .dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+  .cal-legend .dot.loss{ background:var(--teal); }
+  .cal-legend .dot.gain{ background:var(--coral); }
+  .loading-dot{ display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--gold); animation:pulse 1s infinite ease-in-out; }
+  @keyframes pulse{ 0%,100%{opacity:.3;} 50%{opacity:1;} }
+  @media (prefers-reduced-motion: reduce){
+        *{ animation:none !important; transition:none !important; }
+}
+</style>
+  </head>
+  <body>
+  <div id="app"></div>
+  <script>
+  (function(){
+    "use strict";
+  const REACTIONS = ['👏','🔥','💪','😂','😭'];
+  const AVATARS = ['🐯','🐼','🦊','🐸','🐻','🐨','🦁','🐰','🐷','🦉','🐢','🦄','🐔','🐵'];
+  let state = {
+    members: [],
+    checkins: [],
+    currentUserId: null,
+    rankMode: 'change',
+        view: 'loading',
+        setupDraft: [],
+        setupForm: { name:'', emoji:AVATARS[0], start:'', target:'' },
+        expandedFeedCount: 8
+    };
+
+  // ---------- Firebase setup ----------
+  // 👉 把下面這個物件換成你自己 Firebase 專案的設定值(在 Firebase 主控台 → 專案設定 → 一般 → 你的應用程式 找到)
+  const firebaseConfig = {
+        apiKey: "AIzaSyAi4E5kk5pqPOAIx350JB0rkONynuGpGKw",
+              authDomain: "weight-tracker-525e9.firebaseapp.com",
+              projectId: "weight-tracker-525e9",
+              storageBucket: "weight-tracker-525e9.firebasestorage.app",
+              messagingSenderId: "169473363753",
+              appId: "1:169473363753:web:06b555049c2727abcd7138"
+          };
+  function isFirebaseConfigured(){
+        return firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY";
+  }
+  let db = null, membersDocRef = null, checkinsDocRef = null;
+  let membersLoaded = false, checkinsLoaded = false;
+  // ---------- personal device identity (works both inside Claude artifact preview & standalone deployment) ----------
+  async function getLocalIdentity(){
+    if(window.storage){
+      try{ const r = await window.storage.get('currentUserId', false); return r ? JSON.parse(r.value) : null; }catch(e){ return null; }
+    }
+    try{ const v = localStorage.getItem('currentUserId'); return v ? JSON.parse(v) : null; }catch(e){ return null; }
+  }
+  async function setLocalIdentity(id){
+    if(window.storage){
+      try{ await window.storage.set('currentUserId', JSON.stringify(id), false); }catch(e){ console.error(e); }
+      return;
+    }
+    try{ localStorage.setItem('currentUserId', JSON.stringify(id)); }catch(e){ console.error(e); }
+  }
+  // ---------- shared data (members / checkins) via Firestore ----------
+  async function saveMembers(){
+    try{ await membersDocRef.set({ list: state.members }); }
+          catch(e){ console.error('saveMembers failed', e); alert('存檔失敗,請檢查網路連線或 Firebase 設定'); }
+  }
+  async function saveCheckins(){
+    try{ await checkinsDocRef.set({ list: state.checkins }); }
+          catch(e){ console.error('saveCheckins failed', e); alert('存檔失敗,請檢查網路連線或 Firebase 設定'); }
+  }
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function todayStr(){ return new Date().toISOString().slice(0,10); }
+  function fmtTime(ts){
+        const d = new Date(ts);
+    const now = new Date();
+    const diffH = (now-d)/3600000;
+    if(diffH < 1) return Math.max(1,Math.round(diffH*60))+'分鐘前';
+    if(diffH < 24) return Math.round(diffH)+'小時前';
+    return (d.getMonth()+1)+'/'+d.getDate();
+  }
+  function memberById(id){ return state.members.find(m=>m.id===id); }
+  function memberStats(m){
+        const own = state.checkins.filter(c=>c.memberId===m.id).sort((a,b)=>a.date.localeCompare(b.date));
+    const latest = own.length ? own[own.length-1].weight : m.start;
+    const change = +(m.start - latest).toFixed(1); // positive = lost
+    const totalToLose = m.start - m.target;
+    let progress = 0;
+    if(totalToLose !== 0){
+      progress = Math.max(0, Math.min(100, (change/totalToLose)*100));
+    }
+    // streak
+    const dateSet = new Set(own.map(c=>c.date));
+    let streak = 0;
+    let cursor = new Date();
+    if(!dateSet.has(todayStr())) cursor.setDate(cursor.getDate()-1);
+    while(true){
+      const ds = cursor.toISOString().slice(0,10);
+      if(dateSet.has(ds)){ streak++; cursor.setDate(cursor.getDate()-1); }
+      else break;
+    }
+    return { latest, change, progress, streak, hasData: own.length>0 };
+  }
+  function determineView(){
+        if(state.members.length === 0){ state.view = 'setup'; return; }
+    if(!state.currentUserId || !memberById(state.currentUserId)){ state.view = 'identify'; return; }
+    state.view = 'main';
+  }
+
+  // ---------- render root ----------
+  function render(){
+        const app = document.getElementById('app');
+    if(state.view === 'loading'){
+      app.innerHTML = `<div class="center-wrap"><div class="loading-dot"></div></div>`;
+      return;
+    }
+    if(state.view === 'config-needed'){ app.innerHTML = renderConfigNeeded(); return; }
+    if(state.view === 'firebase-error'){ app.innerHTML = renderFirebaseError(); return; }
+    if(state.view === 'setup'){ app.innerHTML = renderSetup(); bindSetup(); return; }
+    if(state.view === 'identify'){ app.innerHTML = renderIdentify(); bindIdentify(); return; }
+    app.innerHTML = renderMain();
+    bindMain();
+  }
+  function renderConfigNeeded(){
+        return `
+      <div class="center-wrap">
+                  <div class="big-title">🔧 還差一步!</div>
+                  <p>這個 App 需要連接到你自己的 Firebase 專案才能儲存資料。<br><br>
+        打開這個檔案的原始碼,找到最上面的 <code style="background:var(--surface-2); padding:2px 6px; border-radius:6px;">firebaseConfig</code>,
+                  把裡面的值換成你自己 Firebase 專案的設定(在 Firebase 主控台 → 專案設定 → 一般 → 你的應用程式 可以找到),存檔後重新整理這個頁面就可以了。</p>
+                </div>
+              `;
+  }
+  function renderFirebaseError(){
+        return `
+      <div class="center-wrap">
+                  <div class="big-title">😵 連不上資料庫</div>
+                  <p>可能是網路問題,或是 Firestore 的安全性規則還沒開放讀寫權限。<br><br>
+                  請到 Firebase 主控台 → Firestore Database → 規則,確認允許讀寫,然後重新整理這個頁面看看。</p>
+        <button class="secondary-btn" onclick="location.reload()">重新整理</button>
+      </div>
+    `;
+  }
+  // ---------- SETUP VIEW ----------
+  function renderSetup(){
+        const draftList = state.setupDraft.map(d => `
+      <div class="member-mini">
+        <span style="font-size:18px">${d.emoji}</span>
+        <span>${escapeHtml(d.name)}</span>
+        <span style="color:var(--text-dim); font-size:11px">${d.start}kg → ${d.target}kg</span>
+            <button data-remove-draft="${d.id}">移除</button>
+          </div>`).join('');
+        const emojiPicks = AVATARS.map(e => `<button data-pick-emoji="${e}" class="${state.setupForm.emoji===e?'sel':''}">${e}</button>`).join('');
+    return `
+      <header>
+        <div class="brand">
+          <div class="title">💃 浪女減肥互助會</div>
+          <div class="subtitle">建立你們的互相激勵小天地</div>
+        </div>
+      </header>
+      <main>
+        <p style="color:var(--text-muted); font-size:13px; line-height:1.6; margin-bottom:18px;">
+          先把固定會一起打卡的朋友加進來,建好之後大家打開同一個網址就能看到彼此的排行榜囉。
+        </p>
+        ${draftList ? `<div class="member-mini-list">${draftList}</div>` : ''}
+        <div class="field">
+          <label>暱稱</label>
+          <input type="text" id="f-name" placeholder="例如:阿凱" value="${escapeHtml(state.setupForm.name)}" maxlength="10">
+                  </div>
+                  <div class="field">
+                    <label>選個代表動物</label>
+                    <div class="emoji-pick">${emojiPicks}</div>
+                  </div>
+                  <div class="field">
+                    <label>起始體重 (kg)</label>
+                    <input type="number" step="0.1" id="f-start" placeholder="例如:78.5" value="${state.setupForm.start}">
+                  </div>
+                  <div class="field">
+                    <label>目標體重 (kg)</label>
+                    <input type="number" step="0.1" id="f-target" placeholder="例如:70" value="${state.setupForm.target}">
+                  </div>
+                  <button class="secondary-btn" id="btn-add-draft">＋ 加入這位成員</button>
+                  <button class="primary-btn" id="btn-finish-setup" ${state.setupDraft.length<1 ? 'style="opacity:.4; pointer-events:none;"' : ''}>
+                    一起打卡吧(共 ${state.setupDraft.length} 人)
+                  </button>
+                </main>
+              `;
+  }
+return; }
+    if(state.view === 'firebase-error'){ app.innerHTML = renderFirebaseError(); return; }
+    if(state.view === 'setup'){ app.innerHTML = renderSetup(); bindSetup(); return; }
+    if(state.view === 'identify'){ app.innerHTML = renderIdentify(); bindIdentify(); return; }
+    app.innerHTML = renderMain();
+    bindMain();
+}
+  function renderConfigNeeded(){
+        return `
+      <div class="center-wrap">
+                  <div class="big-title">🔧 還差一步!</div>
+                  <p>這個 App 需要連接到你自己的 Firebase 專案才能儲存資料。<br><br>
+        打開這個檔案的原始碼,找到最上面的 <code style="background:var(--surface-2); padding:2px 6px; border-radius:6px;">firebaseConfig</code>,
+                  把裡面的值換成你自己 Firebase 專案的設定(在 Firebase 主控台 → 專案設定 → 一般 → 你的應用程式 可以找到),存檔後重新整理這個頁面就可以了。</p>
+                </div>
+              `;
+  }
+  function renderFirebaseError(){
+        return `
+      <div class="center-wrap">
+                  <div class="big-title">😵 連不上資料庫</div>
+                  <p>可能是網路問題,或是 Firestore 的安全性規則還沒開放讀寫權限。<br><br>
+                  請到 Firebase 主控台 → Firestore Database → 規則,確認允許讀寫,然後重新整理這個頁面看看。</p>
+        <button class="secondary-btn" onclick="location.reload()">重新整理</button>
+      </div>
+    `;
+  }
+  // ---------- SETUP VIEW ----------
+  function renderSetup(){
+        const draftList = state.setupDraft.map(d => `
+      <div class="member-mini">
+        <span style="font-size:18px">${d.emoji}</span>
+        <span>${escapeHtml(d.name)}</span>
+        <span style="color:var(--text-dim); font-size:11px">${d.start}kg → ${d.target}kg</span>
+            <button data-remove-draft="${d.id}">移除</button>
+          </div>`).join('');
+    const emojiPicks = AVATARS.map(e => `<button data-pick-emoji="${e}" class="${state.setupForm.emoji===e?'sel':''}">${e}</button>`).join('');
+    return `
+      <header>
+        <div class="brand">
+          <div class="title">💃 浪女減肥互助會</div>
+          <div class="subtitle">建立你們的互相激勵小天地</div>
+        </div>
+      </header>
+      <main>
+        <p style="color:var(--text-muted); font-size:13px; line-height:1.6; margin-bottom:18px;">
+          先把固定會一起打卡的朋友加進來,建好之後大家打開同一個網址就能看到彼此的排行榜囉。
+        </p>
+        ${draftList ? `<div class="member-mini-list">${draftList}</div>` : ''}
+        <div class="field">
+          <label>暱稱</label>
+          <input type="text" id="f-name" placeholder="例如:阿凱" value="${escapeHtml(state.setupForm.name)}" maxlength="10">
+              </div>
+              <div class="field">
+                <label>選個代表動物</label>
+                <div class="emoji-pick">${emojiPicks}</div>
+              </div>
+              <div class="field">
+                <label>起始體重 (kg)</label>
+                <input type="number" step="0.1" id="f-start" placeholder="例如:78.5" value="${state.setupForm.start}">
+              </div>
+              <div class="field">
+                <label>目標體重 (kg)</label>
+                <input type="number" step="0.1" id="f-target" placeholder="例如:70" value="${state.setupForm.target}">
+              </div>
+              <button class="secondary-btn" id="btn-add-draft">＋ 加入這位成員</button>
+              <button class="primary-btn" id="btn-finish-setup" ${state.setupDraft.length<1 ? 'style="opacity:.4; pointer-events:none;"' : ''}>
+                一起打卡吧(共 ${state.setupDraft.length} 人)
+              </button>
+            </main>
+          `;
+}
+
+  function bindSetup(){
+        document.getElementById('f-name').oninput = e => state.setupForm.name = e.target.value;
+    document.getElementById('f-start').oninput = e => state.setupForm.start = e.target.value;
+    document.getElementById('f-target').oninput = e => state.setupForm.target = e.target.value;
+    document.querySelectorAll('[data-pick-emoji]').forEach(btn=>{
+            btn.onclick = () => { state.setupForm.emoji = btn.getAttribute('data-pick-emoji'); render(); };
+});
+    document.getElementById('btn-add-draft').onclick = () => {
+            const f = state.setupForm;
+      if(!f.name.trim() || f.start==='' || f.target===''){
+                alert('請把暱稱、起始體重、目標體重都填一下唷');
+        return;
+      }
+      state.setupDraft.push({
+                id: uid(), name:f.name.trim(), emoji:f.emoji,
+                start: parseFloat(f.start), target: parseFloat(f.target)
+        });
+      state.setupForm = { name:'', emoji:AVATARS[state.setupDraft.length % AVATARS.length], start:'', target:'' };
+      render();
+};
+    document.querySelectorAll('[data-remove-draft]').forEach(btn=>{
+            btn.onclick = () => {
+              const id = btn.getAttribute('data-remove-draft');
+        state.setupDraft = state.setupDraft.filter(d=>d.id!==id);
+        render();
+};
+});
+    document.getElementById('btn-finish-setup').onclick = async () => {
+            state.members = state.setupDraft;
+      await saveMembers();
+      state.setupDraft = [];
+      determineView();
+      render();
+};
+}
+  // ---------- IDENTIFY VIEW ----------
+  function renderIdentify(){
+        const cards = state.members.map(m => `
+      <button class="id-card" data-select-id="${m.id}">
+        <span class="em">${m.emoji}</span>
+        <span>${escapeHtml(m.name)}</span>
+      </button>`).join('');
+    return `
+      <div class="center-wrap">
+              <div class="big-title">你是哪一位?</div>
+              <p>選一下你的身份,之後這台裝置就會記得你囉。</p>
+              <div class="id-grid">${cards}</div>
+            </div>
+          `;
+  }
+  function bindIdentify(){
+        document.querySelectorAll('[data-select-id]').forEach(btn=>{
+      btn.onclick = async () => {
+        const id = btn.getAttribute('data-select-id');
+        state.currentUserId = id;
+        await setLocalIdentity(id);
+        determineView();
+        render();
+  };
+});
+}
+
+  // ---------- MAIN VIEW ----------
+  function renderMain(){
+        const ranked = state.members.map(m => ({ m, stats: memberStats(m) }))
+      .sort((a,b) => state.rankMode==='change'
+        ? b.stats.change - a.stats.change
+        : b.stats.progress - a.stats.progress);
+    const rows = ranked.map((r, idx) => {
+      const rank = idx+1;
+      const medalCls = rank===1?'r1':rank===2?'r2':rank===3?'r3':'';
+      const isMe = r.m.id === state.currentUserId;
+      const changeCls = r.stats.change >= 0 ? 'loss' : 'gain';
+      const changeTxt = (r.stats.change>=0?'-':'+') + Math.abs(r.stats.change).toFixed(1) + 'kg';
+      return `
+        <div class="row ${isMe?'me':''}" style="animation-delay:${idx*45}ms" data-expand="${r.m.id}">
+          <div class="medal ${medalCls}">${rank}</div>
+          <div class="avatar">${r.m.emoji}
+            ${r.stats.streak>=2 ? `<span class="streak-badge">🌟${r.stats.streak}</span>` : ''}
+          </div>
+          <div class="row-info">
+            <div class="row-name">${escapeHtml(r.m.name)} ${isMe?'<span class="you-tag">你</span>':''}</div>
+            <div class="row-sub">${r.stats.hasData ? `目前 ${r.stats.latest.toFixed(1)}kg` : '尚未打卡'} · 目標 ${r.m.target}kg</div>
+            <div class="progress-track"><div class="progress-fill" style="width:${r.stats.progress}%"></div></div>
+          </div>
+          <div class="row-stat">
+            <div class="delta num ${changeCls}">${changeTxt}</div>
+            <div class="cur">達成 ${Math.round(r.stats.progress)}%</div>
+          </div>
+          <div class="chevron">›</div>
+        </div>
+      `;
+}).join('');
+    const feedItems = [...state.checkins].sort((a,b)=>b.timestamp-a.timestamp).slice(0, state.expandedFeedCount);
+    const feedHtml = feedItems.length ? feedItems.map(c => renderFeedCard(c)).join('') : `
+      <div class="empty"><span class="big">📭</span>還沒有人打卡,當第一個開槍的人吧!</div>
+    `;
+    const showMore = state.checkins.length > state.expandedFeedCount
+      ? `<button class="add-row-btn" id="btn-load-more">載入更多動態</button>` : '';
+    return `
+      <header>
+        <div class="brand">
+          <div class="title">💃 浪女減肥互助會</div>
+          <div class="subtitle">${state.members.length} 位好朋友 · ${todayStr()}</div>
+        </div>
+        <button class="icon-btn" id="btn-menu">⚙️</button>
+      </header>
+      <main>
+        <div class="tabs">
+          <div class="tab ${state.rankMode==='change'?'active':''}" data-mode="change">累計減重</div>
+          <div class="tab ${state.rankMode==='progress'?'active':''}" data-mode="progress">達標率</div>
+        </div>
+        <div class="board">${rows}</div>
+        <div class="section-title">動態牆</div>
+        <div class="feed">${feedHtml}</div>
+        ${showMore}
+      </main>
+      <button class="fab" id="btn-checkin">✏️ 今日打卡</button>
+    `;
+}
+
+  function renderFeedCard(c){
+    const m = memberById(c.memberId);
+    if(!m) return '';
+    const stats = memberStats(m);
+    const own = state.checkins.filter(x=>x.memberId===c.memberId).sort((a,b)=>a.date.localeCompare(b.date));
+    const idx = own.findIndex(x=>x.id===c.id);
+    const prevWeight = idx>0 ? own[idx-1].weight : m.start;
+    const d = +(prevWeight - c.weight).toFixed(1);
+    const dCls = d>=0 ? 'loss':'gain';
+    const dTxt = d===0 ? '持平' : (d>0?'-':'+')+Math.abs(d).toFixed(1)+'kg';
+    const rxCounts = {};
+    (c.reactions||[]).forEach(r => rxCounts[r.emoji] = (rxCounts[r.emoji]||0)+1);
+    const myReactions = new Set((c.reactions||[]).filter(r=>r.memberId===state.currentUserId).map(r=>r.emoji));
+    const rxHtml = REACTIONS.map(e => {
+      const n = rxCounts[e]||0;
+      const mine = myReactions.has(e);
+      return `<button class="rx-btn ${mine?'mine':''}" data-rx="${c.id}|${e}">${e}${n?`<span class="n">${n}</span>`:''}</button>`;
+}).join('');
+    const commentsHtml = (c.comments||[]).map(cm => {
+      const cm_m = memberById(cm.memberId);
+      const cmIsMine = cm.memberId === state.currentUserId;
+      return `<div class="comment">
+        <b>${cm_m?escapeHtml(cm_m.name):'?'}:</b><span>${escapeHtml(cm.text)}</span>
+        ${cmIsMine ? `<button class="comment-edit-btn" data-edit-comment="${c.id}|${cm.id}">✏️</button><button class="comment-edit-btn" data-delete-comment="${c.id}|${cm.id}">🗑️</button>` : ''}
+      </div>`;
+}).join('');
+    const isMine = c.memberId === state.currentUserId;
+    return `
+      <div class="feed-card">
+        <div class="feed-head">
+          <div class="avatar" style="width:32px;height:32px;font-size:15px;">${m.emoji}</div>
+          <div class="fname">${escapeHtml(m.name)}</div>
+          <div class="ftime">${fmtTime(c.timestamp)}</div>
+          ${isMine ? `<button class="edit-btn" data-edit-checkin="${c.id}">✏️</button>` : ''}
+        </div>
+        <div class="feed-weight">
+          ${c.weight.toFixed(1)}<span style="font-size:13px;color:var(--text-dim)">kg</span>
+          <span class="delta-chip ${dCls}">${dTxt}</span>
+        </div>
+        ${c.note ? `<div class="feed-note">「${escapeHtml(c.note)}」</div>` : ''}
+        <div class="reactions">${rxHtml}</div>
+        <div class="comments">
+          ${commentsHtml}
+          <div class="comment-form">
+            <input type="text" placeholder="留言鼓勵一下..." data-comment-input="${c.id}" maxlength="80">
+            <button data-comment-submit="${c.id}">送出</button>
+          </div>
+        </div>
+      </div>
+    `;
+}
+
+  function bindMain(){
+    document.querySelectorAll('[data-mode]').forEach(t=>{
+      t.onclick = () => { state.rankMode = t.getAttribute('data-mode'); render(); };
+});
+    document.getElementById('btn-checkin').onclick = openCheckinModal;
+    document.getElementById('btn-menu').onclick = openMenuModal;
+    document.querySelectorAll('[data-expand]').forEach(row=>{
+      row.onclick = () => openMemberDetailModal(row.getAttribute('data-expand'));
+});
+    const more = document.getElementById('btn-load-more');
+    if(more) more.onclick = () => { state.expandedFeedCount += 8; render(); };
+    document.querySelectorAll('[data-edit-checkin]').forEach(btn=>{
+      btn.onclick = () => openEditCheckinModal(btn.getAttribute('data-edit-checkin'), render);
+});
+    document.querySelectorAll('[data-rx]').forEach(btn=>{
+      btn.onclick = async () => {
+        const [checkinId, emoji] = btn.getAttribute('data-rx').split('|');
+        const c = state.checkins.find(x=>x.id===checkinId);
+        if(!c) return;
+        c.reactions = c.reactions || [];
+        const existingIdx = c.reactions.findIndex(r=>r.memberId===state.currentUserId && r.emoji===emoji);
+        if(existingIdx>=0) c.reactions.splice(existingIdx,1);
+        else c.reactions.push({ memberId: state.currentUserId, emoji });
+        render();
+        await saveCheckins();
+};
+});
+    document.querySelectorAll('[data-comment-submit]').forEach(btn=>{
+      btn.onclick = async () => {
+        const id = btn.getAttribute('data-comment-submit');
+        const input = document.querySelector(`[data-comment-input="${id}"]`);
+        const text = input.value.trim();
+        if(!text) return;
+        const c = state.checkins.find(x=>x.id===id);
+        if(!c) return;
+        c.comments = c.comments || [];
+        c.comments.push({ id: uid(), memberId: state.currentUserId, text, ts: Date.now() });
+        render();
+        await saveCheckins();
+        };
+});
+    document.querySelectorAll('[data-comment-input]').forEach(inp=>{
+      inp.onkeydown = (e) => {
+        if(e.key === 'Enter'){
+          const id = inp.getAttribute('data-comment-input');
+          document.querySelector(`[data-comment-submit="${id}"]`).click();
+}
+};
+});
+    document.querySelectorAll('[data-edit-comment]').forEach(btn=>{
+      btn.onclick = () => {
+        const [checkinId, commentId] = btn.getAttribute('data-edit-comment').split('|');
+        openEditCommentModal(checkinId, commentId, render);
+        };
+});
+    document.querySelectorAll('[data-delete-comment]').forEach(btn=>{
+      btn.onclick = async () => {
+        const [checkinId, commentId] = btn.getAttribute('data-delete-comment').split('|');
+        const c = state.checkins.find(x=>x.id===checkinId);
+        if(!c) return;
+        c.comments = (c.comments||[]).filter(cm=>cm.id!==commentId);
+        render();
+        await saveCheckins();
+        };
+});
+}
+
+  // ---------- CHECKIN MODAL ----------
+  function openCheckinModal(){
+    const me = memberById(state.currentUserId);
+    const todays = state.checkins.find(c=>c.memberId===me.id && c.date===todayStr());
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.innerHTML = `
+      <div class="sheet">
+        <h2>${me.emoji} ${escapeHtml(me.name)},今天量了嗎?</h2>
+        <div class="field">
+          <label>今日體重</label>
+          <div class="weight-input">
+            <input type="number" step="0.1" id="ci-weight" value="${todays?todays.weight:''}" placeholder="0.0" autofocus>
+            <span class="unit">kg</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>想說什麼?(選填)</label>
+          <textarea id="ci-note" placeholder="例如:今天忍住沒喝手搖!">${todays?escapeHtml(todays.note||''):''}</textarea>
+        </div>
+        <button class="primary-btn" id="ci-submit">${todays?'更新今日紀錄':'完成打卡'}</button>
+        <button class="secondary-btn" id="ci-cancel">先不打了</button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+    document.getElementById('ci-cancel').onclick = () => overlay.remove();
+    document.getElementById('ci-submit').onclick = async () => {
+      const w = parseFloat(document.getElementById('ci-weight').value);
+      if(isNaN(w) || w<=0){ alert('體重要填對唷'); return; }
+      const note = document.getElementById('ci-note').value.trim();
+      if(todays){
+        todays.weight = w; todays.note = note; todays.timestamp = Date.now();
+}else{
+        state.checkins.push({
+          id: uid(), memberId: me.id, date: todayStr(), weight: w, note,
+          timestamp: Date.now(), reactions: [], comments: []
+          });
+            }
+      overlay.remove();
+      render();
+      await saveCheckins();
+};
+}
+
+  // onRefresh: callback to re-render whichever view opened this modal (main board or detail chart)
+  function openEditCheckinModal(checkinId, onRefresh){
+    const c = state.checkins.find(x=>x.id===checkinId);
+    if(!c) return;
+    const m = memberById(c.memberId);
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.innerHTML = `
+      <div class="sheet">
+        <h2>✏️ 修改 ${formatShortDate(c.date)} 的紀錄</h2>
+        <div class="field">
+          <label>體重</label>
+          <div class="weight-input">
+            <input type="number" step="0.1" id="ec-weight" value="${c.weight}" autofocus>
+            <span class="unit">kg</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>想說什麼?(選填)</label>
+          <textarea id="ec-note" placeholder="例如:今天忍住沒喝手搖!">${escapeHtml(c.note||'')}</textarea>
+        </div>
+        <button class="primary-btn" id="ec-submit">儲存修改</button>
+        <button class="secondary-btn danger-btn" id="ec-delete">🗑️ 刪除這筆紀錄</button>
+        <button class="secondary-btn" id="ec-cancel">取消</button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+    document.getElementById('ec-cancel').onclick = () => overlay.remove();
+    document.getElementById('ec-submit').onclick = async () => {
+      const w = parseFloat(document.getElementById('ec-weight').value);
+      if(isNaN(w) || w<=0){ alert('體重要填對唷'); return; }
+      c.weight = w;
+      c.note = document.getElementById('ec-note').value.trim();
+      overlay.remove();
+      if(onRefresh) onRefresh();
+      await saveCheckins();
+};
+    document.getElementById('ec-delete').onclick = async () => {
+      if(!confirm(`確定要刪除 ${m?escapeHtml(m.name):''} 在 ${formatShortDate(c.date)} 的紀錄嗎?`)) return;
+      state.checkins = state.checkins.filter(x=>x.id!==checkinId);
+      overlay.remove();
+      if(onRefresh) onRefresh();
+      await saveCheckins();
+};
+}
+
+  function openEditCommentModal(checkinId, commentId, onRefresh){
+    const c = state.checkins.find(x=>x.id===checkinId);
+    if(!c) return;
+    const cm = (c.comments||[]).find(x=>x.id===commentId);
+    if(!cm) return;
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.innerHTML = `
+      <div class="sheet">
+        <h2>✏️ 修改留言</h2>
+        <div class="field">
+          <input type="text" id="ecm-text" value="${escapeHtml(cm.text)}" maxlength="80" autofocus>
+        </div>
+        <button class="primary-btn" id="ecm-submit">儲存修改</button>
+        <button class="secondary-btn danger-btn" id="ecm-delete">🗑️ 刪除留言</button>
+        <button class="secondary-btn" id="ecm-cancel">取消</button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+    document.getElementById('ecm-cancel').onclick = () => overlay.remove();
+    document.getElementById('ecm-submit').onclick = async () => {
+      const text = document.getElementById('ecm-text').value.trim();
+      if(!text){ alert('留言不能是空的唷'); return; }
+      cm.text = text;
+      overlay.remove();
+      if(onRefresh) onRefresh();
+      await saveCheckins();
+};
+    document.getElementById('ecm-delete').onclick = async () => {
+      c.comments = c.comments.filter(x=>x.id!==commentId);
+      overlay.remove();
+      if(onRefresh) onRefresh();
+      await saveCheckins();
+};
+}
+
+  // ---------- MEMBER DETAIL / TREND CHART MODAL ----------
+  function formatShortDate(dateStr){
+    const d = new Date(dateStr+'T00:00:00');
+    return (d.getMonth()+1)+'/'+d.getDate();
+}
+  function buildChartSVG(entries, m){
+    const w=520, h=170, padL=10, padR=10, padT=18, padB=8;
+    const weights = entries.map(e=>e.weight);
+    let minW = Math.min(...weights, m.target);
+    let maxW = Math.max(...weights, m.start);
+    if(minW===maxW){ minW-=1; maxW+=1; }
+    const margin = (maxW-minW)*0.15 || 1;
+    minW -= margin; maxW += margin;
+    const innerW = w-padL-padR, innerH = h-padT-padB;
+    const xFor = (i) => entries.length===1 ? padL+innerW/2 : padL + (i/(entries.length-1))*innerW;
+    const yFor = (val) => padT + innerH - ((val-minW)/(maxW-minW))*innerH;
+    const points = entries.map((e,i)=>`${xFor(i).toFixed(1)},${yFor(e.weight).toFixed(1)}`).join(' ');
+    const areaPoints = `${xFor(0).toFixed(1)},${(padT+innerH).toFixed(1)} ${points} ${xFor(entries.length-1).toFixed(1)},${(padT+innerH).toFixed(1)}`;
+    const targetY = yFor(m.target);
+    const dots = entries.map((e,i)=>`<circle cx="${xFor(i).toFixed(1)}" cy="${yFor(e.weight).toFixed(1)}" r="3.5" fill="var(--gold)" stroke="#FFFFFF" stroke-width="1.5"/>`).join('');
+    return `
+      <div style="background:var(--surface-2); border:1px solid var(--border); border-radius:14px; padding:14px 10px 6px; margin-top:4px;">
+        <svg viewBox="0 0 ${w} ${h}" width="100%" style="display:block; overflow:visible;">
+          <line x1="${padL}" y1="${targetY.toFixed(1)}" x2="${w-padR}" y2="${targetY.toFixed(1)}" stroke="var(--teal)" stroke-width="1" stroke-dasharray="4 4" />
+          <text x="${w-padR}" y="${(targetY-6).toFixed(1)}" text-anchor="end" font-size="10" fill="var(--teal)" font-family="Baloo 2, sans-serif">目標 ${m.target}kg</text>
+          <polygon points="${areaPoints}" fill="var(--gold)" opacity="0.08" />
+          <polyline points="${points}" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+          ${dots}
+        </svg>
+        <div style="display:flex; justify-content:space-between; font-size:10.5px; color:var(--text-dim); font-family:'Baloo 2', sans-serif; padding:0 2px; margin-top:2px;">
+          <span>${formatShortDate(entries[0].date)}</span><span>${formatShortDate(entries[entries.length-1].date)}</span>
+        </div>
+      </div>
+    `;
+}
+
+  function buildChartSection(m, range){
+    const own = state.checkins.filter(c=>c.memberId===m.id).sort((a,b)=>a.date.localeCompare(b.date));
+    let entries = own;
+    if(range !== 'all'){
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - (range-1));
+      const cutoffStr = cutoff.toISOString().slice(0,10);
+      entries = own.filter(c => c.date >= cutoffStr);
+}
+    const chart = entries.length >= 1
+      ? buildChartSVG(entries, m)
+      : `<div class="empty" style="margin-top:6px;"><span class="big">📉</span>這段期間還沒有紀錄</div>`;
+    const isMine = m.id === state.currentUserId;
+    const listHtml = entries.length ? [...entries].reverse().map(c => {
+      const ownIdx = own.findIndex(x=>x.id===c.id);
+      const prev = ownIdx>0 ? own[ownIdx-1].weight : m.start;
+      const d = +(prev - c.weight).toFixed(1);
+      const cls = d>=0 ? 'loss' : 'gain';
+      const txt = d===0 ? '持平' : (d>0?'-':'+')+Math.abs(d).toFixed(1)+'kg';
+      return `<div class="detail-row" ${isMine?`data-edit-checkin="${c.id}" style="cursor:pointer;"`:''}>
+        <span class="dd-date num">${formatShortDate(c.date)}</span>
+        <span class="dd-weight num">${c.weight.toFixed(1)}kg</span>
+        <span class="delta-chip ${cls}">${txt}</span>
+        ${isMine ? `<span style="font-size:12px; opacity:0.6;">✏️</span>` : ''}
+      </div>`;
+}).join('') : '';
+    return `
+      <div class="tabs" style="margin-bottom:14px;">
+        <div class="tab ${range===7?'active':''}" data-range="7">7天</div>
+        <div class="tab ${range===30?'active':''}" data-range="30">30天</div>
+        <div class="tab ${range==='all'?'active':''}" data-range="all">全部</div>
+      </div>
+      ${chart}
+      ${listHtml ? `<div class="section-title" style="margin-top:20px;">紀錄明細</div><div class="detail-list">${listHtml}</div>` : ''}
+    `;
+}
+
+  const WEEKDAY_LABELS = ['日','一','二','三','四','五','六'];
+  function buildCalendarSection(m, monthDate){
+    const own = state.checkins.filter(c=>c.memberId===m.id).sort((a,b)=>a.date.localeCompare(b.date));
+    const byDate = {};
+    own.forEach(c => byDate[c.date] = c);
+    const isMine = m.id === state.currentUserId;
+    const year = monthDate.getFullYear();
+    const month = monthDate.getMonth();
+    const firstWeekday = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+    const monthCount = own.filter(c => c.date.slice(0,7) === `${year}-${String(month+1).padStart(2,'0')}`).length;
+    let cells = '';
+    for(let i=0;i<firstWeekday;i++) cells += `<div class="cal-cell cal-blank"></div>`;
+    for(let d=1; d<=daysInMonth; d++){
+      const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const entry = byDate[dateStr];
+      const isToday = dateStr === todayStr();
+      if(entry){
+        const ownIdx = own.findIndex(x=>x.id===entry.id);
+        const prev = ownIdx>0 ? own[ownIdx-1].weight : m.start;
+        const delta = +(prev - entry.weight).toFixed(1);
+        const cls = delta >= 0 ? 'loss' : 'gain';
+        cells += `<div class="cal-cell has-data ${cls} ${isToday?'today':''}" ${isMine?`data-edit-checkin="${entry.id}"`:''}>
+          <span class="cal-day">${d}</span>
+          <span class="cal-weight">${entry.weight.toFixed(1)}</span>
+        </div>`;
+}else{
+        cells += `<div class="cal-cell ${isToday?'today':''}"><span class="cal-day">${d}</span></div>`;
+}
+}
+    const weekdayHtml = WEEKDAY_LABELS.map(w => `<div class="cal-weekday">${w}</div>`).join('');
+    return `
+      <div class="cal-nav">
+        <button data-cal-nav="-1">‹</button>
+        <div class="cal-month-label">${year}年${month+1}月 <span style="font-size:11px; color:var(--text-muted); font-weight:600;">(${monthCount}天打卡)</span></div>
+        <button data-cal-nav="1">›</button>
+      </div>
+      <div class="cal-grid">${weekdayHtml}${cells}</div>
+      <div class="cal-legend">
+        <span><i class="dot loss"></i>變輕</span>
+        <span><i class="dot gain"></i>變重</span>
+        ${isMine ? '<span style="margin-left:auto; color:var(--text-dim);">點格子可修改</span>' : ''}
+      </div>
+    `;
+}
